@@ -13,12 +13,16 @@ async function main(){
         model: "meta-llama/llama-3-8b-instruct",
         messages:[
             {
+                role: "system",
+                content:"You are a funny teacher who explains things in a simple way."
+            },
+            {
                 role: "user",
-                content: "Hiii"
+                content: "Explain Artificial Intelligence"
             }
         ]
     })
-
-    console.log(response)
+    const aiResponse = response.choices[0].message.content
+    console.log(aiResponse)
 }
 main()
