@@ -7,6 +7,7 @@ const ChatInput = () => {
 
     const [text, setText] = useState("")
     const addMessage = useChatStore((state)=> state.addMessage)
+    const messages = useChatStore((state)=> state.messages)
 
     const handleSend = async (e:any)=>{
         e.preventDefault();
@@ -24,7 +25,7 @@ const ChatInput = () => {
           headers:{
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({message: text})
+          body: JSON.stringify({messages: [...messages, {role: "user", content: "text"}]})
         })
 
         const data = await res.json();

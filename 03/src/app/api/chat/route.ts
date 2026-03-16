@@ -14,7 +14,7 @@ export async function POST(req:Request) {
         messages:[
             {
                 role: "user",
-                content: body.message
+                content: body.messages
             }
         ]
     })
