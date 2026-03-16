@@ -8,7 +8,7 @@ const ChatInput = () => {
     const [text, setText] = useState("")
     const addMessage = useChatStore((state)=> state.addMessage)
 
-    const handleSend = (e:any)=>{
+    const handleSend = async (e:any)=>{
         e.preventDefault();
 
         if(!text.trim()) return;
@@ -18,6 +18,22 @@ const ChatInput = () => {
           role: "user",
           content: text
         })
+
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers:{
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({message: text})
+        })
+
+        const data = await res.json();
+
+        addMessage({
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: data.reply,
+        });
 
         setText("");
     }
