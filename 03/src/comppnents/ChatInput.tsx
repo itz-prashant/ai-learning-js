@@ -1,16 +1,23 @@
 "use client"
 
+import { useChatStore } from "@/store/chatStore"
 import { useState } from "react"
 
 const ChatInput = () => {
 
     const [text, setText] = useState("")
+    const addMessage = useChatStore((state)=> state.addMessage)
 
     const handleSend = (e:any)=>{
         e.preventDefault();
 
         if(!text.trim()) return;
-        console.log("message", text)
+        
+        addMessage({
+          id: Date.now().toString(),
+          role: "user",
+          content: text
+        })
 
         setText("");
     }
