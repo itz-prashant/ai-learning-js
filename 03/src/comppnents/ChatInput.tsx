@@ -7,8 +7,8 @@ const ChatInput = () => {
 
     const [text, setText] = useState("")
     const addMessage = useChatStore((state)=> state.addMessage)
-    const messages = useChatStore((state)=> state.messages)
     const updateMessage = useChatStore((state)=> state.updateMessage)
+    const conversationId = useChatStore((state)=> state.activeConversationId)
 
     const handleSend = async (e:any)=>{
         e.preventDefault();
@@ -36,10 +36,14 @@ const ChatInput = () => {
           headers:{
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({messages: [...messages, {role: "user", content: "text"}]})
+          body: JSON.stringify({
+            conversationId,
+            content: text
+          })
         })
 
         // const data = await res.json();
+        if (!res.body) return;
         const reader = res.body?.getReader()
         const decoder = new TextDecoder()
 
@@ -49,7 +53,7 @@ const ChatInput = () => {
           const {done, value} = await reader!.read()
           if(done) break;
 
-          const chunk = decoder.decode(value)
+          const chunk = decoder.decode(value, { stream: true })
           aiText += chunk;
 
           updateMessage(aiId, aiText)

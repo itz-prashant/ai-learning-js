@@ -8,13 +8,15 @@ type Message = {
 
 type ChatState = {
   messages: Message[];
+  activeConversationId: string | null;
+  setActiveConversation: (id:string)=> void;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, content: string)=> void
 };
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
-
+activeConversationId: null,
   addMessage: (message) =>
     set((state) => ({
       messages: [...state.messages, message],
@@ -26,4 +28,9 @@ export const useChatStore = create<ChatState>((set) => ({
           msg.id === id ? { ...msg, content } : msg
         ),
     })),
+
+    setActiveConversation: (id) =>
+      set(() => ({
+        activeConversationId: id,
+      })),
 }));

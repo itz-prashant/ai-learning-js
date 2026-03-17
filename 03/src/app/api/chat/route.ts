@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import OpenAI from "openai";
 
 const client = new OpenAI({
@@ -9,9 +9,33 @@ const client = new OpenAI({
 export async function POST(req:Request) {
     const body = await req.json();
 
+    const { conversationId, content } = body;
+
+    await prisma.message.create({
+        data: {
+            content,
+            role: "user",
+            conversationId,
+        },
+        });
+
+    const messages = await prisma.message.findMany({
+        where: {
+            conversationId,
+        },
+        orderBy: {
+            createdAt: "asc",
+        },
+        }); 
+        
+    const formattedMessages = messages.map((msg) => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+        }));  
+
     const completion = await client.chat.completions.create({
         model: "meta-llama/llama-3-8b-instruct",
-        messages: body.messages,
+        messages: formattedMessages,
         stream: true
     })
 
