@@ -40,13 +40,22 @@ export async function POST(req:Request) {
     })
 
     const encoder = new TextEncoder();
+    let fullText = "";
 
     const stream = new ReadableStream({
         async start(controller){
             for await(const chunk of completion){
                 const content = chunk.choices[0]?.delta?.content || "";
+                fullText += content;
                 controller.enqueue(encoder.encode(content))
             }
+            await prisma.message.create({
+            data: {
+                content: fullText,
+                role: "assistant",
+                conversationId,
+            },
+            });
             controller.close()
         }
     })
