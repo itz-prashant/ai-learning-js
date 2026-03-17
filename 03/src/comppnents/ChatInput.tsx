@@ -8,6 +8,7 @@ const ChatInput = () => {
     const [text, setText] = useState("")
     const addMessage = useChatStore((state)=> state.addMessage)
     const messages = useChatStore((state)=> state.messages)
+    const updateMessage = useChatStore((state)=> state.updateMessage)
 
     const handleSend = async (e:any)=>{
         e.preventDefault();
@@ -20,6 +21,16 @@ const ChatInput = () => {
           content: text
         })
 
+        const aiId = (Date.now() + 1).toString();
+
+        addMessage({
+          id: aiId,
+          role: "assistant",
+          content: "",
+        });
+
+        setText("");
+
         const res = await fetch("/api/chat", {
           method: "POST",
           headers:{
@@ -28,15 +39,21 @@ const ChatInput = () => {
           body: JSON.stringify({messages: [...messages, {role: "user", content: "text"}]})
         })
 
-        const data = await res.json();
+        // const data = await res.json();
+        const reader = res.body?.getReader()
+        const decoder = new TextDecoder()
 
-        addMessage({
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: data.reply,
-        });
+        let aiText = ""
 
-        setText("");
+        while(true){
+          const {done, value} = await reader!.read()
+          if(done) break;
+
+          const chunk = decoder.decode(value)
+          aiText += chunk;
+
+          updateMessage(aiId, aiText)
+        }
     }
   return (
     <form onSubmit={handleSend} className='border-t p-4'>

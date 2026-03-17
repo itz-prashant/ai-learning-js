@@ -11,17 +11,21 @@ export async function POST(req:Request) {
 
     const completion = await client.chat.completions.create({
         model: "meta-llama/llama-3-8b-instruct",
-        messages:[
-            {
-                role: "user",
-                content: body.messages
+        messages: body.messages,
+        stream: true
+    })
+
+    const encoder = new TextEncoder();
+
+    const stream = new ReadableStream({
+        async start(controller){
+            for await(const chunk of completion){
+                const content = chunk.choices[0]?.delta?.content || "";
+                controller.enqueue(encoder.encode(content))
             }
-        ]
+            controller.close()
+        }
     })
 
-    const reply = completion.choices[0].message.content;
-
-    return NextResponse.json({
-        reply
-    })
+    return new Response(stream)
 }
