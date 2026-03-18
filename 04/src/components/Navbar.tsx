@@ -6,7 +6,7 @@ export default function Navbar() {
   const { data: session } = useSession();
 
   return (
-    <div className="flex justify-between items-center p-4 border-b">
+    <div className="flex justify-between items-center px-4 h-[10vh] border-b">
       <h1 className="font-bold text-lg">My App</h1>
 
       <div className="flex items-center gap-4">
