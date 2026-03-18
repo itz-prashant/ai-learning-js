@@ -11,6 +11,7 @@ type Message = {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
   const params = useParams();
 
   const id = params.id as string;
@@ -23,6 +24,43 @@ export default function ChatPage() {
     };
     fetchMessage();
   }, [id]);
+
+  const handleSend = async ()=>{
+    if (!input.trim()) return;
+
+    const res = await fetch("/api/chat", {
+        method:"POST",
+        body: JSON.stringify({
+            conversationId: id,
+            content: input
+        })
+    })
+
+    const reader = res.body?.getReader();
+    const decoder = new TextDecoder();
+
+    let aiText = "";
+
+    while(true){
+        const { done, value } = await reader!.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value)
+        aiText += chunk
+
+        setMessages((prev)=>[
+            ...prev.filter((m)=> m.id !== "stream"),
+            {id: "stream", role:"assistant", content:aiText}
+        ])
+    }
+
+      // refresh final messages
+        const res2 = await fetch(`/api/message?conversationId=${id}`);
+        const data = await res2.json();
+        setMessages(data);
+
+        setInput("");
+  }
 
   return (
     <div className="flex h-[90vh]">
@@ -46,10 +84,12 @@ export default function ChatPage() {
         {/* input */}
         <div className="p-4 border-t flex gap-2">
           <input
+          value={input}
             className="flex-1 border p-2 rounded"
             placeholder="Type message..."
+            onChange={(e) => setInput(e.target.value)}
           />
-          <button className="bg-black text-white px-4 rounded cursor-pointer">
+          <button onClick={handleSend} className="bg-black text-white px-4 rounded cursor-pointer">
             Send
           </button>
         </div>
